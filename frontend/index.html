@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Mandi-Connect — Farm to Retail</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Noto+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="css/style.css"/>
+<link rel="stylesheet" href="css/payment.css"/>
+</head>
+<body>
+
+<!-- OFFLINE BANNER -->
+<div class="offline-banner" id="offlineBanner" style="display:none">
+  📵 <span data-i18n="offline_msg">You're offline — all actions saved locally, will auto-sync when connected</span>
+</div>
+
+<!-- LANGUAGE SELECTOR (always visible) -->
+<div class="lang-bar" id="langBar">
+  <button class="lang-btn active" data-lang="en">🇬🇧 EN</button>
+  <button class="lang-btn" data-lang="hi">🇮🇳 हिंदी</button>
+  <button class="lang-btn" data-lang="kn">🇮🇳 ಕನ್ನಡ</button>
+  <button class="lang-btn" data-lang="mr">🇮🇳 मराठी</button>
+  <button class="lang-btn" data-lang="te">🇮🇳 తెలుగు</button>
+  <button class="lang-btn" data-lang="ta">🇮🇳 தமிழ்</button>
+</div>
+
+<!-- ═══════════════ WELCOME SCREEN ═══════════════ -->
+<div id="welcomeScreen" class="screen active">
+  <div class="welcome-bg">
+    <div class="welcome-particles" id="particles"></div>
+  </div>
+  <div class="welcome-content">
+    <div class="welcome-logo">
+      <div class="logo-circle">🌾</div>
+    </div>
+    <h1 class="welcome-title">Mandi<span>Connect</span></h1>
+    <p class="welcome-subtitle" data-i18n="tagline">Direct Farm-to-Retail Marketplace</p>
+    <p class="welcome-desc" data-i18n="tagline_desc">Connecting farmers directly with retailers — No middlemen, fair prices, offline-first</p>
+    <div class="welcome-features">
+      <div class="wf-item"><span>📸</span><span data-i18n="feat_photo">Photo Listings</span></div>
+      <div class="wf-item"><span>🗺️</span><span data-i18n="feat_gps">GPS Location</span></div>
+      <div class="wf-item"><span>💳</span><span data-i18n="feat_upi">UPI Payments</span></div>
+      <div class="wf-item"><span>📵</span><span data-i18n="feat_offline">Works Offline</span></div>
+    </div>
+    <div class="welcome-btns">
+      <button class="btn-welcome-primary" id="welcomeLoginBtn" data-i18n="login_btn">Login to Continue</button>
+      <button class="btn-welcome-secondary" id="welcomeRegisterBtn" data-i18n="register_btn">New User? Register</button>
+    </div>
+    <div class="welcome-stats">
+      <div class="ws-item"><b>500+</b><span data-i18n="stat_farmers">Farmers</span></div>
+      <div class="ws-divider"></div>
+      <div class="ws-item"><b>1200+</b><span data-i18n="stat_retailers">Retailers</span></div>
+      <div class="ws-divider"></div>
+      <div class="ws-item"><b>₹50L+</b><span data-i18n="stat_txn">Transactions</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ AUTH SCREEN ═══════════════ -->
+<div id="authScreen" class="screen">
+  <div class="auth-bg"></div>
+  <div class="auth-card">
+    <button class="auth-back" id="authBackBtn">← <span data-i18n="back">Back</span></button>
+    <div class="brand">
+      <div class="brand-icon">🌾</div>
+      <h1 class="brand-name">Mandi<span>Connect</span></h1>
+    </div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" data-tab="login" data-i18n="login">Login</button>
+      <button class="auth-tab" data-tab="register" data-i18n="register">Register</button>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="loginForm" class="auth-form active">
+      <div class="input-group">
+        <label>📱 <span data-i18n="phone">Phone Number</span></label>
+        <input type="tel" id="loginPhone" placeholder="9876543210" maxlength="10"/>
+      </div>
+      <div class="input-group">
+        <label>🔒 <span data-i18n="password">Password</span></label>
+        <input type="password" id="loginPassword" placeholder="Enter password"/>
+      </div>
+      <div class="demo-hint">
+        <b data-i18n="demo_hint">Demo accounts (password: 1234)</b><br>
+        🧑‍🌾 Farmer: 9876543210 &nbsp;|&nbsp; 🏪 Retailer: 9811223344
+      </div>
+      <button class="btn-primary" id="loginBtn">Login →</button>
+    </div>
+
+    <!-- REGISTER -->
+    <div id="registerForm" class="auth-form">
+      <div class="input-group">
+        <label>👤 <span data-i18n="full_name">Full Name</span></label>
+        <input type="text" id="regName" placeholder="Ramesh Patil"/>
+      </div>
+      <div class="input-group">
+        <label>📱 <span data-i18n="phone">Phone</span></label>
+        <input type="tel" id="regPhone" placeholder="9876543210" maxlength="10"/>
+      </div>
+      <div class="input-group">
+        <label>🔒 <span data-i18n="password">Password</span></label>
+        <input type="password" id="regPassword" placeholder="Create password"/>
+      </div>
+      <div class="input-group">
+        <label>👥 <span data-i18n="i_am">I am a</span></label>
+        <div class="role-selector">
+          <div class="role-opt active" data-role="farmer">🧑‍🌾 <span data-i18n="farmer">Farmer</span></div>
+          <div class="role-opt" data-role="retailer">🏪 <span data-i18n="retailer">Retailer</span></div>
+          <div class="role-opt" data-role="logistics">🚚 <span data-i18n="logistics">Logistics</span></div>
+        </div>
+      </div>
+      <div class="input-group" id="villageGroup">
+        <label>📍 <span data-i18n="village">Village</span></label>
+        <input type="text" id="regVillage" placeholder="Nipani"/>
+      </div>
+      <div class="input-group" id="cityGroup" style="display:none">
+        <label>🏙️ <span data-i18n="city">City</span></label>
+        <input type="text" id="regCity" placeholder="Pune"/>
+      </div>
+      <button class="btn-gps" id="getLocationBtn">📍 <span data-i18n="use_gps">Use My GPS Location</span></button>
+      <div class="gps-result" id="gpsResult" style="display:none"></div>
+      <button class="btn-primary" id="registerBtn">Create Account →</button>
+    </div>
+    <div class="auth-error" id="authError"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ MAIN APP ═══════════════ -->
+<div id="appScreen" class="screen">
+
+  <!-- HEADER -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="hamburger" id="menuToggle">☰</div>
+      <div class="app-brand">🌾 MandiConnect</div>
+    </div>
+    <div class="header-right">
+      <div class="online-dot" id="onlineDot" title="Online"></div>
+      <div class="balance-chip" id="headerBalance">₹0</div>
+      <div class="user-avatar" id="userAvatar">R</div>
+    </div>
+  </header>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-user">
+      <div class="sb-avatar" id="sbAvatar">R</div>
+      <div class="sb-info">
+        <div class="sb-name" id="sbName">User</div>
+        <div class="sb-role" id="sbRole">farmer</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <button class="btn-logout" id="logoutBtn">🚪 <span data-i18n="logout">Logout</span></button>
+  </div>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- PAGES -->
+  <main class="app-main" id="appMain">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <h2 id="dashGreeting">Good Morning 👋</h2>
+        <p id="dashSub" data-i18n="dash_sub">Here's your overview</p>
+      </div>
+      <div class="stat-cards" id="dashStats"></div>
+      <div class="section-title" data-i18n="recent_activity">Recent Activity</div>
+      <div id="recentActivity"></div>
+    </div>
+
+    <!-- MARKETPLACE -->
+    <div class="page" id="page-marketplace">
+      <div class="page-header">
+        <h2>🛒 <span data-i18n="marketplace">Marketplace</span></h2>
+        <p data-i18n="marketplace_sub">Browse fresh produce from farmers</p>
+      </div>
+      <div class="search-bar">
+        <input type="text" id="searchCrop" placeholder="🔍 Search crop..."/>
+        <input type="text" id="searchVillage" placeholder="📍 Village"/>
+        <button class="btn-search" id="searchBtn" data-i18n="search">Search</button>
+      </div>
+      <div class="view-toggle">
+        <button class="view-btn active" id="gridViewBtn">⊞ Grid</button>
+        <button class="view-btn" id="mapViewBtn">🗺️ Map</button>
+      </div>
+      <div id="marketplaceGrid" class="harvest-grid"></div>
+      <div id="marketplaceMap" style="display:none; height:450px; border-radius:16px; overflow:hidden; margin-top:1rem;"></div>
+    </div>
+
+    <!-- MY LISTINGS -->
+    <div class="page" id="page-listings">
+      <div class="page-header-row">
+        <div>
+          <h2>📦 <span data-i18n="my_listings">My Listings</span></h2>
+          <p data-i18n="my_listings_sub">Manage your harvest listings</p>
+        </div>
+        <button class="btn-add" id="addHarvestBtn">+ <span data-i18n="add_harvest">Add Harvest</span></button>
+      </div>
+      <div id="myListings"></div>
+    </div>
+
+    <!-- ORDERS -->
+    <div class="page" id="page-orders">
+      <div class="page-header">
+        <h2>📋 <span data-i18n="my_orders">My Orders</span></h2>
+        <p data-i18n="orders_sub">Track your orders and deliveries</p>
+      </div>
+      <div id="ordersList"></div>
+    </div>
+
+    <!-- ORDER TRACKING -->
+    <div class="page" id="page-tracking">
+      <div class="page-header">
+        <h2>🚦 <span data-i18n="order_tracking">Order Tracking</span></h2>
+        <p data-i18n="tracking_sub">Live status of your orders</p>
+      </div>
+      <div class="search-bar">
+        <input type="text" id="trackingSearch" placeholder="🔍 Search by Order ID or Crop..." style="flex:1"/>
+        <button class="btn-search" id="trackingSearchBtn" data-i18n="search">Search</button>
+      </div>
+      <div id="trackingList"></div>
+    </div>
+
+    <!-- MAP PAGE -->
+    <div class="page" id="page-map">
+      <div class="page-header">
+        <h2>🗺️ <span data-i18n="farmer_map">Farmer Map</span></h2>
+        <p data-i18n="map_sub">Find farmers near you with GPS</p>
+      </div>
+      <div id="farmerMapFull" style="height:500px; border-radius:16px; overflow:hidden;"></div>
+      <div class="section-title" style="margin-top:1rem" data-i18n="farmers_nearby">Farmers Near You</div>
+      <div id="nearbyFarmersList"></div>
+    </div>
+
+    <!-- WALLET -->
+    <div class="page" id="page-wallet">
+      <div class="page-header">
+        <h2>💰 <span data-i18n="wallet">Wallet & Payments</span></h2>
+      </div>
+      <div class="wallet-card">
+        <div class="wallet-label" data-i18n="available_balance">Available Balance</div>
+        <div class="wallet-amount" id="walletBalance">₹0</div>
+      </div>
+      <div class="section-title" data-i18n="add_money">Add Money via UPI</div>
+      <div class="upi-form">
+        <div class="input-group">
+          <label data-i18n="upi_id">UPI ID</label>
+          <input type="text" id="upiId" placeholder="yourname@paytm"/>
+        </div>
+        <div class="input-group">
+          <label data-i18n="amount">Amount (₹)</label>
+          <input type="number" id="upiAmount" placeholder="1000"/>
+        </div>
+        <button class="btn-primary" id="upiPayBtn">💳 <span data-i18n="add_money_btn">Add Money</span></button>
+      </div>
+      <div class="section-title" data-i18n="txn_history">Transaction History</div>
+      <div id="txnHistory"><div class="empty-state" data-i18n="no_txn">No transactions yet</div></div>
+    </div>
+
+    <!-- LOGISTICS -->
+    <div class="page" id="page-logistics">
+      <div class="page-header">
+        <h2>🚚 <span data-i18n="logistics">Logistics</span></h2>
+        <p data-i18n="logistics_sub">Arrange pickup and delivery</p>
+      </div>
+      <div id="logisticsContent"></div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ═══════════════ MODALS ═══════════════ -->
+
+<!-- ADD HARVEST MODAL -->
+<div class="modal-overlay" id="harvestModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>🌱 <span data-i18n="list_harvest">List New Harvest</span></h3>
+      <button class="modal-close" data-modal="harvestModal">✕</button>
+    </div>
+    <div class="photo-upload-area" id="photoUploadArea">
+      <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none"/>
+      <div class="photo-preview" id="photoPreview">
+        <div class="photo-placeholder">
+          <span>📷</span>
+          <span data-i18n="add_photo">Tap to add photo</span>
+        </div>
+      </div>
+      <div class="photo-btns">
+        <button class="btn-photo" id="cameraBtn">📷 <span data-i18n="camera">Camera</span></button>
+        <button class="btn-photo" id="galleryBtn">🖼️ <span data-i18n="gallery">Gallery</span></button>
+      </div>
+    </div>
+    <div class="input-group">
+      <label data-i18n="crop_name">Crop Name</label>
+      <select id="hCrop">
+        <option>Tomatoes</option><option>Onions</option><option>Potatoes</option>
+        <option>Cabbage</option><option>Wheat</option><option>Rice</option>
+        <option>Corn</option><option>Carrots</option><option>Spinach</option>
+        <option>Grapes</option><option>Mango</option><option>Sugarcane</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <div class="input-group">
+        <label data-i18n="quantity">Quantity (kg)</label>
+        <input type="number" id="hQty" placeholder="500"/>
+      </div>
+      <div class="input-group">
+        <label data-i18n="price_per_kg">Price/kg (₹)</label>
+        <input type="number" id="hPrice" placeholder="25"/>
+      </div>
+    </div>
+    <div class="input-group">
+      <label data-i18n="available_from">Available From</label>
+      <input type="date" id="hDate"/>
+    </div>
+    <div class="input-group">
+      <label data-i18n="description">Description</label>
+      <textarea id="hDesc" placeholder="Grade, quality details..."></textarea>
+    </div>
+    <button class="btn-gps" id="harvestGpsBtn">📍 <span data-i18n="use_gps">Use My GPS Location</span></button>
+    <div class="gps-result" id="harvestGpsResult" style="display:none"></div>
+    <button class="btn-primary" id="submitHarvest">📦 <span data-i18n="list_harvest_btn">List Harvest</span></button>
+  </div>
+</div>
+
+<!-- ORDER MODAL -->
+<div class="modal-overlay" id="orderModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>🛒 <span data-i18n="place_order">Place Bulk Order</span></h3>
+      <button class="modal-close" data-modal="orderModal">✕</button>
+    </div>
+    <div id="orderModalContent"></div>
+    <div class="input-group">
+      <label data-i18n="quantity">Quantity (kg)</label>
+      <input type="number" id="orderQty" placeholder="100"/>
+    </div>
+    <div class="order-summary" id="orderSummary"></div>
+    <div class="section-title" style="margin-top:0.8rem">📍 <span data-i18n="farmer_location">Farmer Location</span></div>
+    <div id="orderFarmerMap" style="height:200px; border-radius:12px; overflow:hidden; margin-bottom:1rem;"></div>
+    <div class="section-title">💳 <span data-i18n="pay_upi">Pay via UPI</span></div>
+    <div class="upi-apps" id="upiApps"></div>
+    <button class="btn-primary" id="submitOrder">✅ <span data-i18n="confirm_order">Confirm Order & Pay</span></button>
+  </div>
+</div>
+
+<!-- UPI PAYMENT MODAL -->
+<div class="modal-overlay" id="upiModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>💳 UPI Payment</h3>
+      <button class="modal-close" data-modal="upiModal">✕</button>
+    </div>
+    <div id="upiModalContent"></div>
+  </div>
+</div>
+
+<!-- ORDER TRACKING MODAL -->
+<div class="modal-overlay" id="trackingModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>🚦 <span data-i18n="order_tracking">Order Tracking</span></h3>
+      <button class="modal-close" data-modal="trackingModal">✕</button>
+    </div>
+    <div id="trackingModalContent"></div>
+  </div>
+</div>
+
+<!-- DELETE CONFIRM MODAL -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal" style="max-height:auto">
+    <div class="modal-header">
+      <h3>🗑️ <span data-i18n="delete_harvest">Delete Harvest</span></h3>
+      <button class="modal-close" data-modal="deleteModal">✕</button>
+    </div>
+    <div id="deleteModalContent">
+      <div style="text-align:center;padding:1.5rem 0">
+        <div style="font-size:3rem;margin-bottom:0.8rem">⚠️</div>
+        <p style="font-family:var(--font);font-weight:700;font-size:1.05rem;margin-bottom:0.5rem" data-i18n="delete_confirm">Are you sure you want to delete this harvest?</p>
+        <p style="color:var(--muted);font-size:0.85rem" data-i18n="delete_warn">This action cannot be undone.</p>
+      </div>
+      <div style="display:flex;gap:0.8rem;margin-top:0.5rem">
+        <button class="btn-primary" id="deleteConfirmBtn" style="background:var(--red);box-shadow:0 4px 16px rgba(217,79,61,0.35)">🗑️ <span data-i18n="yes_delete">Yes, Delete</span></button>
+        <button class="btn-primary" id="deleteCancelBtn" style="background:var(--muted);">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/payment.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
